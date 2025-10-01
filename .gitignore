@@ -1,0 +1,13 @@
+# build
+/target/
+
+# IDE
+/.idea/
+*.iml
+
+# OS noise
+.DS_Store
+
+# env / secrets
+.env
+.env.*
