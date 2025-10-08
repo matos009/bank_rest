@@ -29,9 +29,6 @@ public class CryptoServiceImpl implements CryptoService{
         this(props, new SecureRandom());
     }
 
-
-
-    /** Отдельный конструктор чтобы использовать в тестах */
     public CryptoServiceImpl(CryptoProperties props, SecureRandom rnd) {
         Assert.hasText(props.getAesKey(), "crypto.aes-key must be set");
         Assert.hasText(props.getHmacKey(), "crypto.hmac-key must be set");
@@ -57,8 +54,7 @@ public class CryptoServiceImpl implements CryptoService{
             Cipher cipher = Cipher.getInstance(AES_TRANS);
             cipher.init(Cipher.ENCRYPT_MODE, aesKey, new GCMParameterSpec(GCM_TAG_BITS, iv));
             byte[] ct = cipher.doFinal(pan.getBytes(StandardCharsets.UTF_8));
-
-            // Склеиваем: IV || CIPHERTEXT||TAG
+            
             ByteBuffer buf = ByteBuffer.allocate(iv.length + ct.length);
             buf.put(iv);
             buf.put(ct);

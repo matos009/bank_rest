@@ -15,18 +15,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
-
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.endsWith;
-
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -45,7 +42,6 @@ class CardControllerTest {
 
     @MockBean CardService cards;
 
-    // ===== helpers =====
     private CardResponse sampleCard(long id, long ownerId, String last4, int m, int y, CardStatus st) {
         return new CardResponse(
                 id,
@@ -59,7 +55,6 @@ class CardControllerTest {
         );
     }
 
-    // ---------- POST /cards/admin/owner/{ownerId} ----------
     @Test
     void createForOwner_ok() throws Exception {
         var req = new CreateCardRequest("4111111111111111", (short)12, (short)2030);
@@ -70,14 +65,13 @@ class CardControllerTest {
         mvc.perform(post("/cards/admin/owner/{ownerId}", 42L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(req)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.ownerId").value(42))
                 .andExpect(jsonPath("$.maskedPan", endsWith("1111")))
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
     }
 
-    // ---------- GET /cards/admin?status=...&createdFrom=...&createdTo=...&page/size/sort ----------
     @Test
     void adminList_ok() throws Exception {
         var c = sampleCard(5L, 100L, "0000", 1, 2031, CardStatus.BLOCKED);
@@ -99,7 +93,6 @@ class CardControllerTest {
                 .andExpect(jsonPath("$.totalElements").value(1));
     }
 
-    // ---------- GET /cards/me?userId=...&status=...&page/size ----------
     @Test
     @WithMockUser(username = "7", roles = "USER")
     void myCards_ok() throws Exception {
@@ -107,8 +100,7 @@ class CardControllerTest {
         var c2 = sampleCard(2L, 7L, "5678", 1, 2031, CardStatus.ACTIVE);
         var page = new PageImpl<>(List.of(c1, c2), PageRequest.of(0, 10), 2);
 
-        given(cards.findMyCards(eq(7L), eq(CardStatus.ACTIVE), any(Pageable.class)))
-                .willReturn(page);
+        given(cards.findMyCards(eq(7L), eq(CardStatus.ACTIVE), any(Pageable.class))).willReturn(page);
 
         mvc.perform(get("/cards/me")
                         .param("status", "ACTIVE")
@@ -121,12 +113,10 @@ class CardControllerTest {
                 .andExpect(jsonPath("$.content[1].maskedPan", endsWith("5678")));
     }
 
-    // ---------- PATCH /cards/{id}/status ----------
     @Test
     void changeStatus_ok() throws Exception {
         doNothing().when(cards).changeStatus(77L, CardStatus.BLOCKED);
 
-        // тело для узкого DTO { "status": "BLOCKED" }
         var body = """
                 {"status":"BLOCKED"}
                 """;
@@ -134,12 +124,11 @@ class CardControllerTest {
         mvc.perform(patch("/cards/{id}/status", 77L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(cards).changeStatus(77L, CardStatus.BLOCKED);
     }
 
-    // ---------- PATCH /cards/{id}/expiry ----------
     @Test
     void updateExpiry_ok() throws Exception {
         var req = new UpdateExpiryRequest((short) 2, (short) 2032);
@@ -156,13 +145,12 @@ class CardControllerTest {
                 .andExpect(jsonPath("$.expYear").value(2032));
     }
 
-    // ---------- DELETE /cards/{id} ----------
     @Test
     void delete_ok() throws Exception {
         doNothing().when(cards).delete(55L);
 
         mvc.perform(delete("/cards/{id}", 55L))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(cards).delete(55L);
     }

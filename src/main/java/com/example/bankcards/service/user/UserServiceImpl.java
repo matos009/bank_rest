@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
         u.setFullName(req.fullName());
         u.setEnabled(true);
 
-        // Роли: если не передали — назначим USER
+
         Set<String> roleNames = (req.roles() == null || req.roles().isEmpty())
                 ? Set.of("USER")
                 : req.roles().stream().map(r -> r.trim().toUpperCase()).collect(Collectors.toSet());
@@ -71,7 +71,6 @@ public class UserServiceImpl implements UserService {
                     .withIgnorePaths("enabled", "passwordHash", "fullName", "createdAt", "updatedAt", "id");
             page = users.findAll(Example.of(probe, matcher), pageable);
         }
-        // Жадная загрузка ролей для страницы
         List<UserResponse> mapped = page.getContent().stream()
                 .map(u -> users.findWithRolesById(u.getId()).orElse(u)) // подгрузим роли, если не подгружены, небольшой костыль конечно, но времени мало и это как бы тестовое
                 .map(this::toDto)
@@ -147,7 +146,6 @@ public class UserServiceImpl implements UserService {
         return toDto(u);
     }
 
-    // ===== helpers =====
 
     private Set<Role> resolveRoles(Set<String> roleNames) {
         Set<Role> rs = new HashSet<>();

@@ -81,7 +81,7 @@ public class CardServiceImpl implements CardService {
 
 
         return page.map(c -> {
-            c.setUser(u); // безопасно, в контексте одинаковый user
+            c.setUser(u);
             return CardMapper.toDto(c);
         });
     }
@@ -120,7 +120,7 @@ public class CardServiceImpl implements CardService {
         if (c.getStatus() == CardStatus.EXPIRED && newStatus == CardStatus.ACTIVE) {
             throw new BusinessException("Cannot activate EXPIRED card");
         }
-        c.setStatus(newStatus); // dirty checking
+        c.setStatus(newStatus);
     }
 
     @Override
@@ -146,8 +146,6 @@ public class CardServiceImpl implements CardService {
         cards.deleteById(cardId);
     }
 
-    // ===== helpers =====
-
     private void validateExpiry(short month, short year) {
         if (month < 1 || month > 12) {
             throw new BusinessException("expMonth must be 1..12");
@@ -161,7 +159,6 @@ public class CardServiceImpl implements CardService {
     }
 
     private boolean isExpired(short month, short year) {
-        // считаем истекшей, если текущий YearMonth > (year, month)
         YearMonth now = YearMonth.now();
         YearMonth card = YearMonth.of(year, month);
         return now.isAfter(card);

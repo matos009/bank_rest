@@ -5,18 +5,18 @@ import com.example.bankcards.entity.User;
 import org.springframework.data.domain.*;
 
 public interface UserService {
-    UserResponse create(CreateUserRequest req);                      // регистрация (админ/seed)
-    UserResponse get(Long id);                                       // получить 1
-    Page<UserResponse> list(Pageable pageable, String emailLike);    // поиск + пагинация
-    UserResponse update(Long id, UpdateUserRequest req);             // обновить ФИО/enabled
-    void delete(Long id);                                            // удалить
+    UserResponse create(CreateUserRequest req);
+    UserResponse get(Long id);
+    Page<UserResponse> list(Pageable pageable, String emailLike);
+    UserResponse update(Long id, UpdateUserRequest req);
+    void delete(Long id);
 
-    void changePassword(Long id, ChangePasswordRequest req);         // со старым паролем
-    void adminSetPassword(Long id, String newPassword);              // без старого (админ)
+    void changePassword(Long id, ChangePasswordRequest req);
+    void adminSetPassword(Long id, String newPassword);
 
-    UserResponse setRoles(Long id, SetRolesRequest req);             // заменить роли
-    UserResponse addRole(Long id, String role);                      // добавить роль
-    UserResponse removeRole(Long id, String role);                   // убрать роль
+    UserResponse setRoles(Long id, SetRolesRequest req);
+    UserResponse addRole(Long id, String role);
+    UserResponse removeRole(Long id, String role);
 
     User getEntityByEmailOrThrow(String email);
     UserResponse getByEmail(String email);

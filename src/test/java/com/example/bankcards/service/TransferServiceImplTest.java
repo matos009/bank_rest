@@ -51,7 +51,7 @@ class TransferServiceImplTest {
                 CardStatus.ACTIVE, new BigDecimal("5.00"));
     }
 
-    // ==== happy path ====
+
     @Test
     void transfer_success_updatesBalances_andSavesTransfer() {
         when(users.findById(1L)).thenReturn(Optional.of(owner));
@@ -71,7 +71,7 @@ class TransferServiceImplTest {
         TransferRequest req = new TransferRequest(10L, 11L, new BigDecimal("30.00"), "coffee");
         TransferResponse resp = service.transfer(1L, req);
 
-        // Проверяем DTO
+
         assertThat(resp.id()).isEqualTo(100L);
         assertThat(resp.userId()).isEqualTo(1L);
         assertThat(resp.fromCardId()).isEqualTo(10L);
@@ -81,11 +81,11 @@ class TransferServiceImplTest {
         assertThat(resp.description()).isEqualTo("coffee");
         assertThat(resp.createdAt()).isNotNull();
 
-        // Балансы поменялись
+
         assertThat(from.getBalance()).isEqualByComparingTo("70.00");
         assertThat(to.getBalance()).isEqualByComparingTo("35.00");
 
-        // Что именно сохранили
+
         Transfer saved = cap.getValue();
         assertThat(saved.getUser().getId()).isEqualTo(1L);
         assertThat(saved.getFromCard().getId()).isEqualTo(10L);
@@ -98,7 +98,7 @@ class TransferServiceImplTest {
         verifyNoMoreInteractions(transfers);
     }
 
-    // ==== базовая валидация входа ====
+
     @Test
     void transfer_sameCard_rejected() {
         TransferRequest req = new TransferRequest(10L, 10L, new BigDecimal("1.00"), null);

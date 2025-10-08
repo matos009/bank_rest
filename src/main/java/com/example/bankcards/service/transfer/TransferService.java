@@ -6,4 +6,5 @@ import com.example.bankcards.dto.transfer.TransferResponse;
 
 public interface TransferService {
     TransferResponse transfer(Long userId, TransferRequest req);
+    TransferResponse transferForCurrentUser(TransferRequest req);
 }

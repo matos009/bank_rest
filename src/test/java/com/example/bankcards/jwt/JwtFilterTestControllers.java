@@ -14,7 +14,6 @@ class JwtFilterTestControllers {
 
     @GetMapping("/secure/me")
     String me(Authentication authentication) {
-        // JwtAuthFilter кладёт в principal Long userId
         Object p = authentication.getPrincipal();
         return "userId=" + p;
     }

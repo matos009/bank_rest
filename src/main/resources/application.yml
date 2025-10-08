@@ -1,12 +1,8 @@
-#Что нужно сделать:
-#  - Указать настройки подключения к базе данных.
-#  - Указать порт приложения.
-#  - Настроить параметры безопасности и JWT.
-#  - Включить Swagger UI.
-# application.yml — главный конфигурационный файл Spring Boot.
+app:
+  cors:
+    allowed-origins: "http://localhost:3000"
 security:
   jwt:
-    # 32 байта (256 бит) в base64. Сгенерируй свои и ПОДМЕНИ тут.
     secret: ${JWT_SECRET:e+WLevA5+p/vKqKx6b1t0Vde0SG+eOm0NPv3/Hy0xBk=}
     issuer: bankcards
     expiry-minutes: 60

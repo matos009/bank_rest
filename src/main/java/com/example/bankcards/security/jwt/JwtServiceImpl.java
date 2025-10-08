@@ -22,7 +22,7 @@ public class JwtServiceImpl implements JwtService {
         this.props = props;
 
         byte[] raw = Base64.getDecoder().decode(props.getSecret());
-        if (raw.length < 32) { // для HS256 нужно >= 256 бит
+        if (raw.length < 32) {
             throw new IllegalArgumentException("JWT secret must be at least 32 bytes (256-bit) after base64 decode");
         }
         this.key = Keys.hmacShaKeyFor(raw);
@@ -89,10 +89,8 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<String> getRoles(String token) {
         try {
-            // тип стирается, поэтому получаем как raw List и приводим элементы к String
             Object v = claims(token).get("roles");
             if (v instanceof List<?> list) {
                 List<String> out = new ArrayList<>(list.size());

@@ -13,6 +13,7 @@ import com.example.bankcards.exception.NotFoundException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.TransferRepository;
 import com.example.bankcards.repository.UserRepository;
+import com.example.bankcards.security.utils.SecurityUtils;
 import com.example.bankcards.util.TransferMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public TransferResponse transfer(Long userId, TransferRequest req) {
-        // 1) базовая валидация входных данных
+
         if (req.fromCardId() == null || req.toCardId() == null) {
             throw new BusinessException("Both fromCardId and toCardId are required");
         }
@@ -49,35 +50,35 @@ public class TransferServiceImpl implements TransferService {
             throw new BusinessException("Amount must be > 0");
         }
 
-        // 2) убедимся, что пользователь существует
+
         User user = users.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
-        // 3) поднимем обе карты С БЛОКИРОВКОЙ
+
         Card from = cards.findByIdForUpdate(req.fromCardId())
                 .orElseThrow(() -> new NotFoundException("From-card not found: " + req.fromCardId()));
         Card to   = cards.findByIdForUpdate(req.toCardId())
                 .orElseThrow(() -> new NotFoundException("To-card not found: " + req.toCardId()));
 
-        // 4) проверки принадлежности
+
         if (!from.getUser().getId().equals(user.getId()) || !to.getUser().getId().equals(user.getId())) {
             throw new BusinessException("Both cards must belong to the user");
         }
 
-        // 5) проверки статуса/сроков
+
         rejectIfBlockedOrExpired(from, "from-card");
         rejectIfBlockedOrExpired(to,   "to-card");
 
-        // 6) проверка достаточности средств
+
         if (from.getBalance().compareTo(req.amount()) < 0) {
             throw new BusinessException("Insufficient funds");
         }
 
-        // 7) проводка  — внутри одной транзакции + под блокировкой
+
         from.setBalance(from.getBalance().subtract(req.amount()));
         to.setBalance(to.getBalance().add(req.amount()));
 
-        // 8) запись о переводе
+
         Transfer t = new Transfer();
         t.setUser(user);
         t.setFromCard(from);
@@ -87,12 +88,22 @@ public class TransferServiceImpl implements TransferService {
         t.setDescription(req.description());
 
         Transfer saved = transfers.save(t);
-        // dirty checking сохранит изменения баланса карт при коммите транзакции
+
 
         return TransferMapper.toDto(saved);
     }
 
-    // ===== helpers =====
+    @Override
+    @Transactional
+    public TransferResponse transferForCurrentUser(TransferRequest req) {
+        Long userId = SecurityUtils.currentUserId();
+        if (userId == null) {
+            throw new BusinessException("Unauthenticated");
+        }
+        return transfer(userId, req);
+    }
+
+
 
     private void rejectIfBlockedOrExpired(Card c, String label) {
         if (c.getStatus() == CardStatus.BLOCKED) {

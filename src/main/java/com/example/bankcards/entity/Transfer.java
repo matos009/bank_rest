@@ -45,5 +45,4 @@ public class Transfer {
         createdAt = OffsetDateTime.now();
     }
 
-    // getters/setters
 }
